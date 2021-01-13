@@ -1,12 +1,12 @@
 var express = require('express');
 var schemas = require('./models.js')
+var dbconfig = require('./dbconfig.js')
 var app = express();
 var bodyParser = require('body-parser');
 const PORT = 9000
 
 const mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost:27017/center_bank', { useNewUrlParser: true, useUnifiedTopology: true });
-
+mongoose.connect(dbconfig.mongoexterno, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -21,20 +21,20 @@ app.use((req, res, next) => {
 });
 
 app.get('/', function (req, res) {
-    res.send('hello world');
+    res.send('MongoDb using Mongoose!');
 });
 
 app.get('/ncm', function (req, res) {
+    if (String(req.query.find)!=="undefined")
+        var find = { "descricao": { "$regex": `.*${req.query.find}.*` } }
+    else find = {}
+    console.log(find);
     if (req.method == "GET") {
-        const model = mongoose.model('ncm', new mongoose.Schema(schemas.ncm),'ncm');
-
-        model.find({}, (err, resp) => {
+        schemas.ncm.find(find, (err, resp) => {
             if (err) {
-                process.stdout.write(err)
                 res.send(err)
             }
             else {
-                process.stdout.write(schemas.ncm)
                 res.send(resp)
             }
         })
